@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastify-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fastify-api
+  template:
+    metadata:
+      labels:
+        app: fastify-api
+    spec:
+      containers:
+        - name: fastify-api
+          image: scaling-nodejs-k8s:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASS
+              value: "password"
+            - name: DB_NAME
+              value: "node_scaling"
+            - name: REDIS_HOST
+              value: "redis-service"

@@ -1,0 +1,35 @@
+{
+  "name": "scaling-nodejs-kubernetes",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "High-performance Fastify API deployed on Kubernetes with monitoring and AWS EKS support",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit",
+    "start:prometheus": "docker run -d -p 9090:9090 -v $(pwd)/monitoring/prometheus-config.yaml:/etc/prometheus/prometheus.yml prom/prometheus",
+    "start:grafana": "docker run -d -p 3001:3000 -v $(pwd)/monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/default.json grafana/grafana",
+    "start:jaeger": "docker run -d -p 16686:16686 -p 14268:14268 -p 6831:6831/udp jaegertracing/all-in-one:1.22",
+    "start:monitoring": "npm run start:prometheus && npm run start:grafana && npm run start:jaeger",
+    "nginx:start": "docker run -d -p 80:80 -v $(pwd)/nginx/nginx.conf:/etc/nginx/nginx.conf nginx",
+    "deploy:aws:eks": "eksctl create cluster --name fastify-cluster --region us-east-1 --nodegroup-name workers --node-type t3.medium --nodes 3 --nodes-min 1 --nodes-max 4",
+    "update:kubeconfig": "aws eks update-kubeconfig --region us-east-1 --name fastify-cluster",
+    "apply:k8s": "kubectl apply -f k8s/",
+    "delete:aws:eks": "eksctl delete cluster --name fastify-cluster"
+  },
+  "dependencies": {
+    "fastify": "^4.15.0",
+    "pg": "^8.7.1",
+    "redis": "^4.0.6",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "jest": "^29.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
